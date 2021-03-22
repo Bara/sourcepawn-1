@@ -1,0 +1,42 @@
+name: Run tests
+on: ["push", "pull_request"]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        AM_TYPE: ["optimize", "debug"]
+  
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install dependencies
+        shell: bash
+        run: |
+          sudo apt update
+          sudo apt install -y gcc-multilib g++-multilib
+          sudo apt install clang
+      
+      - name: Preparing
+        run: |
+          CHECKOUT_DIR=$PWD && cd .. && $CHECKOUT_DIR/tools/checkout-deps.sh && cd $CHECKOUT_DIR
+          export PATH="~/.local/bin:$PATH"
+      
+      - name: Get clang++ version
+        run: clang++ --version
+
+      - name: Create objdir
+        run: |
+          mkdir objdir
+          cd objdir
+      
+      - name: Configure
+        run: CC=clang CXX=clang++ python ../configure.py --enable-${{ matrix.AM_TYPE }} --targets=x86,x64
+
+      - name: AMBuild
+        run: ambuild
+      
+      - name: Run tests
+        run: python $CHECKOUT_DIR/tests/runtests.py .

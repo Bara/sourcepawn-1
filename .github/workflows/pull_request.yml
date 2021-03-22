@@ -19,10 +19,9 @@ jobs:
           sudo apt install -y gcc-multilib g++-multilib
           sudo apt install clang
       
-      - name: Preparing
-        run: |
-          CHECKOUT_DIR=$PWD && cd .. && $CHECKOUT_DIR/tools/checkout-deps.sh && cd $CHECKOUT_DIR
-          export PATH="~/.local/bin:$PATH"
+      - name: Checkout Deps
+        shell: bash
+        run: cd .. && $GITHUB_WORKSPACE/tools/checkout-deps.sh
       
       - name: Get clang++ version
         run: clang++ --version
@@ -33,7 +32,7 @@ jobs:
           cd objdir
       
       - name: Configure
-        run: CC=clang CXX=clang++ python ../configure.py --enable-${{ matrix.AM_TYPE }} --targets=x86,x64
+        run: CC=clang CXX=clang++ python3 ../configure.py --enable-${{ matrix.AM_TYPE }} --targets=x86,x64
 
       - name: AMBuild
         run: ambuild
